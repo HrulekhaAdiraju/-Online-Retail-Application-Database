@@ -1,0 +1,101 @@
+-- Drop existing tables if they exist for a fresh start
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS users;
+
+-- Create table for users
+CREATE TABLE users (
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    first_name TEXT,
+    last_name TEXT,
+    address TEXT,
+    city TEXT,
+    state TEXT,
+    zip_code TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create table for products
+CREATE TABLE products (
+    product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT,
+    price REAL NOT NULL,
+    stock INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create table for orders
+CREATE TABLE orders (
+    order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total REAL NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- Create table for order items
+CREATE TABLE order_items (
+    order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    price REAL NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+-- Insert sample data into users
+INSERT INTO users (username, email, password_hash, first_name, last_name, address, city, state, zip_code)
+VALUES 
+('john_doe', 'john.doe@example.com', 'hashed_password_123', 'John', 'Doe', '123 Main St', 'Anytown', 'CA', '12345'),
+('jane_smith', 'jane.smith@example.com', 'hashed_password_456', 'Jane', 'Smith', '456 Oak St', 'Othertown', 'TX', '67890');
+
+-- Insert sample data into products
+INSERT INTO products (name, description, price, stock)
+VALUES 
+('Laptop', 'High-performance laptop', 999.99, 10),
+('Smartphone', 'Latest model smartphone', 499.99, 20);
+
+-- Insert sample data into orders
+INSERT INTO orders (user_id, total)
+VALUES 
+(1, 1499.98),  -- Assuming user_id 1 is John Doe
+(2, 499.99);   -- Assuming user_id 2 is Jane Smith
+
+-- Insert sample data into order items
+INSERT INTO order_items (order_id, product_id, quantity, price)
+VALUES 
+(1, 1, 1, 999.99),  -- Order 1 includes 1 Laptop
+(1, 2, 1, 499.99),  -- Order 1 includes 1 Smartphone
+(2, 2, 1, 499.99);  -- Order 2 includes 1 Smartphone
+-- Check users table
+SELECT * FROM users;
+
+-- Check products table
+SELECT * FROM products;
+
+-- Check orders table
+SELECT * FROM orders;
+
+-- Check order_items table
+SELECT * FROM order_items;
+SELECT * FROM users;
+SELECT * FROM products;
+SELECT * FROM orders;
+SELECT * FROM order_items;
+SELECT 
+    o.order_id,
+    u.username,
+    p.name AS product_name,
+    oi.quantity,
+    oi.price,
+    o.total
+FROM orders o
+JOIN users u ON o.user_id = u.user_id
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id;
